@@ -1,0 +1,47 @@
+{
+  "name": "bora-agente-impressao",
+  "version": "1.0.0",
+  "description": "Agente de impressão térmica automática do Bora — roda no computador do restaurante e imprime pedidos confirmados na hora.",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc && electron .",
+    "dist": "tsc && electron-builder",
+    "release": "tsc && electron-builder --publish always"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "electron-updater": "^6.3.9"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "electron": "^36.9.5",
+    "electron-builder": "^25.0.0",
+    "typescript": "^5.6.0"
+  },
+  "build": {
+    "appId": "com.bora.agenteimpressao",
+    "productName": "Bora - Agente de Impressão",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "matheusbollynho-pixel",
+      "repo": "bora-agente-impressao"
+    }
+  }
+}

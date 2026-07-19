@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<title>Bora — Agente de Impressão</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 20px;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+    background: #111318;
+    color: #e8e9ec;
+  }
+  h1 { font-size: 15px; font-weight: 700; margin: 0 0 4px; }
+  p.sub { font-size: 12px; color: #9297a3; margin: 0 0 18px; }
+  label { display: block; font-size: 11px; color: #9297a3; margin-bottom: 4px; margin-top: 14px; }
+  input, select {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: 1px solid #33353d;
+    background: #1a1c22;
+    color: #e8e9ec;
+    font-size: 13px;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: #e23744; }
+  .linha { display: flex; gap: 10px; }
+  .linha > div { flex: 1; }
+  .segmentado { display: flex; gap: 6px; margin-top: 6px; }
+  .segmentado button {
+    margin: 0;
+    flex: 1;
+    padding: 8px;
+    font-size: 12px;
+    background: #1a1c22;
+    color: #9297a3;
+    border: 1px solid #33353d;
+  }
+  .segmentado button.ativo { background: #e23744; color: #fff; border-color: #e23744; }
+  button {
+    margin-top: 16px;
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #salvar { background: #e23744; color: #fff; }
+  #testar { background: #262932; color: #e8e9ec; margin-top: 8px; }
+  #detectar, #atualizarImpressoras { background: #262932; color: #e8e9ec; margin-top: 8px; font-size: 12px; padding: 8px; }
+  button:disabled { opacity: 0.6; cursor: default; }
+  #resultadosDeteccao {
+    margin-top: 8px;
+    display: none;
+    flex-direction: column;
+    gap: 4px;
+  }
+  #resultadosDeteccao.visivel { display: flex; }
+  #resultadosDeteccao button {
+    margin: 0;
+    text-align: left;
+    background: #1a1c22;
+    color: #e8e9ec;
+    font-weight: 400;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  #resultadosDeteccao button:hover { background: #262932; }
+  #resultadosDeteccao p { margin: 0; font-size: 12px; color: #9297a3; }
+  #secaoRede, #secaoUsb { display: none; }
+  #secaoRede.visivel, #secaoUsb.visivel { display: block; }
+  #status {
+    margin-top: 18px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: #1a1c22;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #bolinha { width: 8px; height: 8px; border-radius: 50%; background: #666; flex-shrink: 0; }
+  #mensagem { margin-top: 10px; font-size: 12px; min-height: 16px; }
+  .ok { color: #4caf7d; }
+  .erro { color: #e2555c; }
+</style>
+</head>
+<body>
+  <h1>Bora — Agente de Impressão</h1>
+  <p class="sub">Cole o token gerado no painel do Bora (Configurações → Agente de impressão) e configure a impressora.</p>
+
+  <label for="token">Token do agente</label>
+  <input id="token" type="text" placeholder="Cole aqui o token do painel" />
+
+  <label for="nome">Nome do restaurante (aparece no topo da comanda)</label>
+  <input id="nome" type="text" placeholder="Preenche sozinho ao colar o token" />
+
+  <label>Como a impressora se conecta?</label>
+  <div class="segmentado">
+    <button type="button" id="tipoRede" class="ativo">Rede (Wi-Fi/Ethernet)</button>
+    <button type="button" id="tipoUsb">USB</button>
+  </div>
+
+  <div id="secaoRede" class="visivel">
+    <div class="linha">
+      <div>
+        <label for="host">IP da impressora</label>
+        <input id="host" type="text" placeholder="127.0.0.1" />
+      </div>
+      <div style="max-width: 100px">
+        <label for="porta">Porta</label>
+        <input id="porta" type="text" placeholder="9100" />
+      </div>
+    </div>
+    <button id="detectar">Detectar impressora na rede</button>
+    <div id="resultadosDeteccao"></div>
+  </div>
+
+  <div id="secaoUsb">
+    <label for="impressoraUsb">Impressora instalada no Windows</label>
+    <select id="impressoraUsb"></select>
+    <button id="atualizarImpressoras">Atualizar lista</button>
+  </div>
+
+  <button id="salvar">Salvar</button>
+  <button id="testar">Imprimir teste</button>
+
+  <div id="status">
+    <span id="bolinha"></span>
+    <span id="statusTexto">Carregando...</span>
+  </div>
+  <div id="mensagem"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>
