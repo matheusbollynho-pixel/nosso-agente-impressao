@@ -1,10 +1,26 @@
-import { app, BrowserWindow, Menu, Tray, ipcMain, nativeImage } from "electron"
+import { app, BrowserWindow, Menu, Tray, ipcMain, nativeImage, dialog } from "electron"
 import { autoUpdater } from "electron-updater"
 import { join } from "path"
+import { appendFileSync } from "fs"
 import { lerConfig, salvarConfig, configCompleta, type ConfigAgente } from "./config"
 import { iniciarPolling, imprimirTeste, buscarNomeRestaurante, type StatusAgente } from "./polling"
 import { detectarImpressorasNaRede } from "./deteccao"
 import { listarImpressorasWindows, garantirCompartilhada } from "./impressoraUsb"
+
+// Diagnóstico temporário do auto-update: checkForUpdatesAndNotify() só
+// mostra algo pro usuário quando a atualização já foi baixada com sucesso —
+// qualquer erro no meio do caminho (rede, feed, verificação) fica invisível
+// sem isso. Grava num arquivo de log e também loga no console (visível se
+// o .exe for aberto a partir de um terminal).
+function logAtualizacao(mensagem: string): void {
+  const linha = `[${new Date().toISOString()}] ${mensagem}`
+  console.log(linha)
+  try {
+    appendFileSync(join(app.getPath("userData"), "update.log"), linha + "\n")
+  } catch {
+    // Se nem isso funcionar, não há mais nada a fazer aqui.
+  }
+}
 
 // A cada quantas horas verifica se saiu versão nova — o agente fica
 // residente na bandeja o dia inteiro sem reiniciar, então checar só na
@@ -15,6 +31,7 @@ let janela: BrowserWindow | null = null
 let tray: Tray | null = null
 let statusAtual: StatusAgente = "sem-config"
 let detalheStatus = ""
+let atualizacaoBaixada = false
 
 const rotuloStatus: Record<StatusAgente, string> = {
   ocioso: "Conectado — aguardando pedidos",
@@ -71,6 +88,19 @@ function criarTray(): void {
     {
       label: "Sair",
       click: () => {
+        if (atualizacaoBaixada) {
+          // app.exit() pula os eventos de quit que o electron-updater usa
+          // pra instalar — aqui a janela é destruída na força (ignora o
+          // preventDefault de "esconder ao fechar") pra não travar o
+          // quitAndInstall, que precisa fechar o app de verdade.
+          janela?.destroy()
+          janela = null
+          // Silencioso (sem tela de instalador) e força reabrir depois —
+          // o dono do restaurante não deveria precisar clicar em nada pra
+          // atualizar, só ver o app fechar e voltar sozinho.
+          autoUpdater.quitAndInstall(true, true)
+          return
+        }
         app.exit(0)
       },
     },
@@ -101,8 +131,41 @@ app.whenReady().then(() => {
   // download acontece em segundo plano, a instalação só acontece quando o
   // usuário aceitar reiniciar (checkForUpdatesAndNotify já cuida do
   // diálogo nativo).
-  autoUpdater.checkForUpdatesAndNotify()
-  setInterval(() => autoUpdater.checkForUpdatesAndNotify(), INTERVALO_CHECAGEM_ATUALIZACAO_MS)
+  logAtualizacao(`App pronto. Versão atual: ${app.getVersion()}`)
+  autoUpdater.checkForUpdatesAndNotify().catch((erro) => {
+    logAtualizacao(`checkForUpdatesAndNotify rejeitou: ${erro instanceof Error ? erro.stack ?? erro.message : erro}`)
+  })
+  setInterval(() => {
+    autoUpdater.checkForUpdatesAndNotify().catch((erro) => {
+      logAtualizacao(`checkForUpdatesAndNotify rejeitou: ${erro instanceof Error ? erro.stack ?? erro.message : erro}`)
+    })
+  }, INTERVALO_CHECAGEM_ATUALIZACAO_MS)
+})
+
+autoUpdater.on("checking-for-update", () => {
+  logAtualizacao("Checando atualização...")
+})
+
+autoUpdater.on("update-available", (info) => {
+  logAtualizacao(`Atualização disponível: v${info.version}`)
+})
+
+autoUpdater.on("update-not-available", (info) => {
+  logAtualizacao(`Nenhuma atualização disponível (versão do feed: v${info.version})`)
+})
+
+autoUpdater.on("download-progress", (progresso) => {
+  logAtualizacao(`Baixando atualização... ${Math.round(progresso.percent)}%`)
+})
+
+autoUpdater.on("update-downloaded", (info) => {
+  atualizacaoBaixada = true
+  logAtualizacao(`Atualização v${info.version} baixada, pronta pra instalar.`)
+})
+
+autoUpdater.on("error", (erro) => {
+  logAtualizacao(`ERRO no auto-update: ${erro.stack ?? erro.message}`)
+  dialog.showErrorBox("Bora — erro ao verificar atualização", erro.message)
 })
 
 app.on("window-all-closed", () => {
