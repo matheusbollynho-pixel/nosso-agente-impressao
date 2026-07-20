@@ -91,7 +91,7 @@ const DUPLO = "=".repeat(LARGURA)
 export function montarComanda(nomeRestaurante: string, pedido: PedidoParaImprimir): Buffer {
   const linhas: string[] = []
 
-  linhas.push(centralizar(nomeRestaurante || "Bora"))
+  linhas.push(centralizar(nomeRestaurante || "Nosso"))
   linhas.push(DUPLO)
   linhas.push(`Pedido #${pedido.pedido_id.slice(0, 8)}`)
   linhas.push(new Date(pedido.criado_em).toLocaleString("pt-BR"))

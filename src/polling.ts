@@ -4,7 +4,7 @@ import { montarComanda, type PedidoParaImprimir } from "./escpos"
 import { enviarParaImpressora } from "./impressora"
 import { enviarParaImpressoraUsb } from "./impressoraUsb"
 
-// Mesma URL/chave pública (anon) já usada no app web do Bora — não é
+// Mesma URL/chave pública (anon) já usada no app web do Nosso — não é
 // segredo, é a mesma credencial que já vai embutida no bundle do site.
 const SUPABASE_URL = "https://bkqbjnmejhziepwlbcny.supabase.co"
 const SUPABASE_ANON_KEY =

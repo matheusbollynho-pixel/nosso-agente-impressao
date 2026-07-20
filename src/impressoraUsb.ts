@@ -15,7 +15,7 @@ import { randomUUID } from "crypto"
 
 const execAsync = promisify(exec)
 
-const NOME_COMPARTILHAMENTO = "BoraAgenteImpressao"
+const NOME_COMPARTILHAMENTO = "NossoAgenteImpressao"
 
 export async function listarImpressorasWindows(): Promise<string[]> {
   try {
@@ -32,7 +32,7 @@ export async function listarImpressorasWindows(): Promise<string[]> {
 }
 
 // Garante que a impressora escolhida está compartilhada sob um nome fixo
-// (BoraAgenteImpressao), pra não depender do nome de exibição (que pode ter
+// (NossoAgenteImpressao), pra não depender do nome de exibição (que pode ter
 // espaço/acento e complicar o caminho de rede). Chamado uma vez ao salvar a
 // configuração, não a cada impressão.
 export async function garantirCompartilhada(nomeImpressora: string): Promise<{ ok: boolean; erro?: string }> {
@@ -48,7 +48,7 @@ export async function garantirCompartilhada(nomeImpressora: string): Promise<{ o
 }
 
 export async function enviarParaImpressoraUsb(dados: Buffer): Promise<void> {
-  const arquivoTemp = join(tmpdir(), `bora-comanda-${randomUUID()}.prn`)
+  const arquivoTemp = join(tmpdir(), `nosso-comanda-${randomUUID()}.prn`)
   await writeFile(arquivoTemp, dados)
   try {
     const caminhoRede = `\\\\localhost\\${NOME_COMPARTILHAMENTO}`

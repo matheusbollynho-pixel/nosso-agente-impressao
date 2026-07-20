@@ -1,7 +1,7 @@
 {
-  "name": "bora-agente-impressao",
-  "version": "1.0.7",
-  "description": "Agente de impressão térmica automática do Bora — roda no computador do restaurante e imprime pedidos confirmados na hora.",
+  "name": "nosso-agente-impressao",
+  "version": "1.0.0",
+  "description": "Agente de impressão térmica automática do Nosso — roda no computador do restaurante e imprime pedidos confirmados na hora.",
   "main": "dist/main.js",
   "scripts": {
     "build": "tsc",
@@ -20,8 +20,8 @@
     "typescript": "^5.6.0"
   },
   "build": {
-    "appId": "com.bora.agenteimpressao",
-    "productName": "Bora - Agente de Impressão",
+    "appId": "com.nosso.agenteimpressao",
+    "productName": "Nosso - Agente de Impressão",
     "directories": {
       "output": "release"
     },
@@ -41,7 +41,7 @@
     "publish": {
       "provider": "github",
       "owner": "matheusbollynho-pixel",
-      "repo": "bora-agente-impressao",
+      "repo": "nosso-agente-impressao",
       "releaseType": "release"
     }
   }

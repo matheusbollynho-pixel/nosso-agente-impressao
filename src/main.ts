@@ -54,7 +54,7 @@ function criarJanela(): void {
     width: 420,
     height: 680,
     resizable: false,
-    title: "Bora — Agente de Impressão",
+    title: "Nosso — Agente de Impressão",
     icon: caminhoIcone(),
     webPreferences: {
       preload: join(__dirname, "preload.js"),
@@ -75,7 +75,7 @@ function criarJanela(): void {
 
 function atualizarTray(): void {
   if (!tray) return
-  const texto = `Bora — ${rotuloStatus[statusAtual]}${detalheStatus ? `: ${detalheStatus}` : ""}`
+  const texto = `Nosso — ${rotuloStatus[statusAtual]}${detalheStatus ? `: ${detalheStatus}` : ""}`
   tray.setToolTip(texto)
 }
 
@@ -106,7 +106,7 @@ function criarTray(): void {
     },
   ])
   tray.setContextMenu(menu)
-  tray.setToolTip("Bora — Agente de Impressão")
+  tray.setToolTip("Nosso — Agente de Impressão")
   tray.on("click", () => criarJanela())
 }
 
@@ -165,7 +165,7 @@ autoUpdater.on("update-downloaded", (info) => {
 
 autoUpdater.on("error", (erro) => {
   logAtualizacao(`ERRO no auto-update: ${erro.stack ?? erro.message}`)
-  dialog.showErrorBox("Bora — erro ao verificar atualização", erro.message)
+  dialog.showErrorBox("Nosso — erro ao verificar atualização", erro.message)
 })
 
 app.on("window-all-closed", () => {

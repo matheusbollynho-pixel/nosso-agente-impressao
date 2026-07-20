@@ -6,7 +6,7 @@ export interface StatusInfo {
   detalhe?: string
 }
 
-contextBridge.exposeInMainWorld("agenteBora", {
+contextBridge.exposeInMainWorld("agenteNosso", {
   lerConfig: (): Promise<ConfigAgente> => ipcRenderer.invoke("ler-config"),
   salvarConfig: (config: ConfigAgente): Promise<{ ok: boolean; avisoCompartilhamento?: string }> =>
     ipcRenderer.invoke("salvar-config", config),

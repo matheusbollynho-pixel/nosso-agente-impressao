@@ -62,7 +62,7 @@ function selecionarTipoConexao(tipo) {
 async function carregarImpressorasWindows() {
   const impressoraSelecionada = campoImpressoraUsb.value
   campoImpressoraUsb.innerHTML = "<option>Carregando...</option>"
-  const nomes = await window.agenteBora.listarImpressorasWindows()
+  const nomes = await window.agenteNosso.listarImpressorasWindows()
   campoImpressoraUsb.innerHTML = ""
   if (nomes.length === 0) {
     campoImpressoraUsb.innerHTML = "<option value=''>Nenhuma impressora instalada encontrada</option>"
@@ -89,7 +89,7 @@ function montarConfig() {
 }
 
 async function carregar() {
-  const config = await window.agenteBora.lerConfig()
+  const config = await window.agenteNosso.lerConfig()
   campoNome.value = config.nomeRestaurante ?? ""
   campoToken.value = config.token ?? ""
   campoHost.value = config.impressoraHost ?? "127.0.0.1"
@@ -100,14 +100,14 @@ async function carregar() {
     campoImpressoraUsb.value = config.impressoraUsbNome
   }
 
-  const status = await window.agenteBora.statusAtual()
+  const status = await window.agenteNosso.statusAtual()
   mostrarStatus(status)
 }
 
 campoToken.addEventListener("blur", async () => {
   const token = campoToken.value.trim()
   if (!token) return
-  const nome = await window.agenteBora.buscarNomeRestaurante(token)
+  const nome = await window.agenteNosso.buscarNomeRestaurante(token)
   if (nome) {
     campoNome.value = nome
     mostrarMensagem(`Restaurante detectado: ${nome}`, "ok")
@@ -119,7 +119,7 @@ botaoTipoUsb.addEventListener("click", () => selecionarTipoConexao("usb"))
 botaoAtualizarImpressoras.addEventListener("click", carregarImpressorasWindows)
 
 botaoSalvar.addEventListener("click", async () => {
-  const resultado = await window.agenteBora.salvarConfig(montarConfig())
+  const resultado = await window.agenteNosso.salvarConfig(montarConfig())
   if (resultado.avisoCompartilhamento) {
     mostrarMensagem(`Salvo, mas não deu pra compartilhar a impressora automaticamente: ${resultado.avisoCompartilhamento}`, "erro")
   } else {
@@ -129,7 +129,7 @@ botaoSalvar.addEventListener("click", async () => {
 
 botaoTestar.addEventListener("click", async () => {
   botaoTestar.disabled = true
-  const resultado = await window.agenteBora.imprimirTeste(montarConfig())
+  const resultado = await window.agenteNosso.imprimirTeste(montarConfig())
   botaoTestar.disabled = false
   if (resultado.ok) {
     mostrarMensagem("Comanda de teste enviada.", "ok")
@@ -144,7 +144,7 @@ botaoDetectar.addEventListener("click", async () => {
   resultadosDeteccao.className = ""
   resultadosDeteccao.innerHTML = ""
 
-  const encontradas = await window.agenteBora.detectarImpressoras()
+  const encontradas = await window.agenteNosso.detectarImpressoras()
 
   botaoDetectar.disabled = false
   botaoDetectar.textContent = "Detectar impressora na rede"
@@ -170,5 +170,5 @@ botaoDetectar.addEventListener("click", async () => {
   resultadosDeteccao.className = "visivel"
 })
 
-window.agenteBora.aoAtualizarStatus(mostrarStatus)
+window.agenteNosso.aoAtualizarStatus(mostrarStatus)
 carregar()
