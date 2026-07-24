@@ -43,6 +43,15 @@ function esperar(ms: number): Promise<void> {
   return new Promise((resolver) => setTimeout(resolver, ms))
 }
 
+// Melhor esforço, igual o heartbeat — reportar a falha não pode gerar uma
+// segunda falha que trave o agente.
+function registrarErroServidor(token: string, mensagem: string): void {
+  supabase.rpc("registrar_erro_impressao", { p_token: token, p_mensagem: mensagem }).then(
+    () => {},
+    () => {},
+  )
+}
+
 async function enviarComanda(config: ConfigAgente, comanda: Buffer): Promise<void> {
   if (config.tipoConexao === "usb") {
     await enviarParaImpressoraUsb(comanda)
@@ -57,6 +66,13 @@ async function processarUmaRodada(callbacks: Callbacks): Promise<void> {
     callbacks.onStatus?.("sem-config")
     return
   }
+
+  // Melhor esforço — se o heartbeat falhar (ex: sem internet momentânea),
+  // não deve travar a rodada de impressão em si.
+  supabase.rpc("registrar_heartbeat_agente", { p_token: config.token }).then(
+    () => {},
+    () => {},
+  )
 
   const { data, error } = await supabase.rpc("pedidos_pendentes_impressao", { p_token: config.token })
 
@@ -87,11 +103,15 @@ async function processarUmaRodada(callbacks: Callbacks): Promise<void> {
         p_token: config.token,
       })
       if (erroMarcar) {
-        callbacks.onStatus?.("erro", `Impresso mas não confirmado: ${erroMarcar.message}`)
+        const mensagem = `Impresso mas não confirmado: ${erroMarcar.message}`
+        callbacks.onStatus?.("erro", mensagem)
+        registrarErroServidor(config.token, mensagem)
         return
       }
     } catch (erro) {
-      callbacks.onStatus?.("erro", erro instanceof Error ? erro.message : "Falha ao imprimir")
+      const mensagem = erro instanceof Error ? erro.message : "Falha ao imprimir"
+      callbacks.onStatus?.("erro", mensagem)
+      registrarErroServidor(config.token, mensagem)
       return
     }
   }
