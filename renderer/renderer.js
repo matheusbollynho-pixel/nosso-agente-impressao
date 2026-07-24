@@ -8,6 +8,7 @@ const botaoTipoUsb = document.getElementById("tipoUsb")
 const secaoRede = document.getElementById("secaoRede")
 const secaoUsb = document.getElementById("secaoUsb")
 const botaoAtualizarImpressoras = document.getElementById("atualizarImpressoras")
+const botaoSincronizar = document.getElementById("sincronizar")
 const botaoSalvar = document.getElementById("salvar")
 const botaoTestar = document.getElementById("testar")
 const botaoDetectar = document.getElementById("detectar")
@@ -96,6 +97,17 @@ function montarConfig() {
   }
 }
 
+async function atualizarDadosRestaurante(token, { avisar } = { avisar: true }) {
+  if (!token) return
+  const dados = await window.agenteNosso.buscarDadosRestaurante(token)
+  if (dados) {
+    campoNome.value = dados.nome
+    enderecoRestauranteAtual = dados.endereco ?? ""
+    telefoneRestauranteAtual = dados.telefone ?? ""
+    if (avisar) mostrarMensagem(`Restaurante detectado: ${dados.nome}`, "ok")
+  }
+}
+
 async function carregar() {
   const config = await window.agenteNosso.lerConfig()
   campoNome.value = config.nomeRestaurante ?? ""
@@ -112,18 +124,35 @@ async function carregar() {
 
   const status = await window.agenteNosso.statusAtual()
   mostrarStatus(status)
+
+  // Refaz a busca sozinho ao abrir o app, sem esperar o usuário clicar no
+  // campo do token — instalações que já tinham token salvo de uma versão
+  // anterior (antes de endereco/telefone existirem) nunca disparariam o
+  // "blur" sozinhas depois de atualizar, e ficariam pra sempre sem esses
+  // dados na comanda até alguém mexer manualmente no campo.
+  if (config.token) {
+    await atualizarDadosRestaurante(config.token, { avisar: false })
+    await window.agenteNosso.salvarConfig(montarConfig())
+  }
 }
 
 campoToken.addEventListener("blur", async () => {
+  await atualizarDadosRestaurante(campoToken.value.trim())
+})
+
+// Botão manual — pra quando o dono edita nome/endereço/telefone no painel web
+// depois de já ter configurado o agente (sem isso, só reabrindo o app ou
+// mexendo no campo do token de novo é que traria o dado novo).
+botaoSincronizar.addEventListener("click", async () => {
   const token = campoToken.value.trim()
-  if (!token) return
-  const dados = await window.agenteNosso.buscarDadosRestaurante(token)
-  if (dados) {
-    campoNome.value = dados.nome
-    enderecoRestauranteAtual = dados.endereco ?? ""
-    telefoneRestauranteAtual = dados.telefone ?? ""
-    mostrarMensagem(`Restaurante detectado: ${dados.nome}`, "ok")
+  if (!token) {
+    mostrarMensagem("Cole o token antes de sincronizar.", "erro")
+    return
   }
+  botaoSincronizar.disabled = true
+  await atualizarDadosRestaurante(token)
+  await window.agenteNosso.salvarConfig(montarConfig())
+  botaoSincronizar.disabled = false
 })
 
 botaoTipoRede.addEventListener("click", () => selecionarTipoConexao("rede"))
