@@ -7,6 +7,8 @@ export type TipoConexaoImpressora = "rede" | "usb"
 export interface ConfigAgente {
   token: string
   nomeRestaurante: string
+  enderecoRestaurante: string
+  telefoneRestaurante: string
   tipoConexao: TipoConexaoImpressora
   impressoraHost: string
   impressoraPorta: number
@@ -16,6 +18,8 @@ export interface ConfigAgente {
 const CONFIG_PADRAO: ConfigAgente = {
   token: "",
   nomeRestaurante: "",
+  enderecoRestaurante: "",
+  telefoneRestaurante: "",
   tipoConexao: "rede",
   impressoraHost: "127.0.0.1",
   impressoraPorta: 9100,

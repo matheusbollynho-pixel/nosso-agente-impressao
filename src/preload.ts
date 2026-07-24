@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from "electron"
 import type { ConfigAgente } from "./config"
+import type { DadosRestauranteImpressao } from "./escpos"
 
 export interface StatusInfo {
   status: string
@@ -15,7 +16,8 @@ contextBridge.exposeInMainWorld("agenteNosso", {
   statusAtual: (): Promise<StatusInfo> => ipcRenderer.invoke("status-atual"),
   detectarImpressoras: (): Promise<string[]> => ipcRenderer.invoke("detectar-impressoras"),
   listarImpressorasWindows: (): Promise<string[]> => ipcRenderer.invoke("listar-impressoras-windows"),
-  buscarNomeRestaurante: (token: string): Promise<string | null> => ipcRenderer.invoke("buscar-nome-restaurante", token),
+  buscarDadosRestaurante: (token: string): Promise<DadosRestauranteImpressao | null> =>
+    ipcRenderer.invoke("buscar-dados-restaurante", token),
   aoAtualizarStatus: (callback: (info: StatusInfo) => void) => {
     ipcRenderer.on("status", (_evento, info: StatusInfo) => callback(info))
   },

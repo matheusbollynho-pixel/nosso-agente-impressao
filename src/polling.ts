@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js"
 import { lerConfig, configCompleta, type ConfigAgente } from "./config"
-import { montarComanda, type PedidoParaImprimir } from "./escpos"
+import { montarComanda, type DadosRestauranteImpressao, type PedidoParaImprimir } from "./escpos"
 import { enviarParaImpressora } from "./impressora"
 import { enviarParaImpressoraUsb } from "./impressoraUsb"
 
@@ -95,7 +95,14 @@ async function processarUmaRodada(callbacks: Callbacks): Promise<void> {
   for (const pedido of pedidos) {
     try {
       callbacks.onStatus?.("imprimindo")
-      const comanda = montarComanda(config.nomeRestaurante, pedido)
+      const comanda = montarComanda(
+        {
+          nome: config.nomeRestaurante,
+          endereco: config.enderecoRestaurante || null,
+          telefone: config.telefoneRestaurante || null,
+        },
+        pedido,
+      )
       await enviarComanda(config, comanda)
 
       const { error: erroMarcar } = await supabase.rpc("marcar_pedido_impresso", {
@@ -146,18 +153,23 @@ const PEDIDO_TESTE: Omit<PedidoParaImprimir, "criado_em"> = {
 
 export async function imprimirTeste(config: ConfigAgente): Promise<void> {
   const comanda = montarComanda(
-    config.nomeRestaurante || "Impressão de teste",
+    {
+      nome: config.nomeRestaurante || "Impressão de teste",
+      endereco: config.enderecoRestaurante || null,
+      telefone: config.telefoneRestaurante || null,
+    },
     { ...PEDIDO_TESTE, criado_em: new Date().toISOString() },
   )
   await enviarComanda(config, comanda)
 }
 
-// Busca o nome do restaurante direto do banco a partir do token — evita
-// depender de digitação manual (e erro de digitação) a cada instalação
-// nova, já que o token sozinho já identifica o restaurante.
-export async function buscarNomeRestaurante(token: string): Promise<string | null> {
+// Busca nome/endereço/telefone do restaurante direto do banco a partir do
+// token — evita depender de digitação manual (e erro de digitação) a cada
+// instalação nova, já que o token sozinho já identifica o restaurante.
+export async function buscarDadosRestaurante(token: string): Promise<DadosRestauranteImpressao | null> {
   if (!token) return null
-  const { data, error } = await supabase.rpc("nome_restaurante_por_token", { p_token: token })
-  if (error || !data) return null
-  return data as string
+  const { data, error } = await supabase.rpc("dados_restaurante_por_token", { p_token: token })
+  if (error || !data || data.length === 0) return null
+  const linha = data[0] as { nome: string; endereco: string | null; telefone: string | null }
+  return { nome: linha.nome, endereco: linha.endereco, telefone: linha.telefone }
 }

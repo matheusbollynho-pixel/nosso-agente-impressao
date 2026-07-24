@@ -13,6 +13,12 @@ export interface ItemPedidoImpressao {
   opcionais: { grupoNome: string; opcoes: { nome: string; preco: number }[] }[] | null
 }
 
+export interface DadosRestauranteImpressao {
+  nome: string
+  endereco: string | null
+  telefone: string | null
+}
+
 export interface PedidoParaImprimir {
   pedido_id: string
   cliente_nome: string | null
@@ -88,10 +94,12 @@ function quebrarLinha(texto: string, recuo = 0, largura = LARGURA): string[] {
 const SEPARADOR = "-".repeat(LARGURA)
 const DUPLO = "=".repeat(LARGURA)
 
-export function montarComanda(nomeRestaurante: string, pedido: PedidoParaImprimir): Buffer {
+export function montarComanda(restaurante: DadosRestauranteImpressao, pedido: PedidoParaImprimir): Buffer {
   const linhas: string[] = []
 
-  linhas.push(centralizar(nomeRestaurante || "Nosso"))
+  linhas.push(centralizar(restaurante.nome || "Nosso"))
+  if (restaurante.endereco) quebrarLinha(restaurante.endereco).forEach((l) => linhas.push(centralizar(l.trim())))
+  if (restaurante.telefone) linhas.push(centralizar(restaurante.telefone))
   linhas.push(DUPLO)
   linhas.push(`Pedido #${pedido.pedido_id.slice(0, 8)}`)
   linhas.push(new Date(pedido.criado_em).toLocaleString("pt-BR"))

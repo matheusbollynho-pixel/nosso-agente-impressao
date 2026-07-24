@@ -17,6 +17,12 @@ const statusTexto = document.getElementById("statusTexto")
 const mensagem = document.getElementById("mensagem")
 
 let tipoConexao = "rede"
+// Endereço/telefone do estabelecimento não têm campo próprio na tela — vêm
+// do painel web (Configurações → Perfil) e só ficam em cache aqui pra sair
+// no cabeçalho da comanda impressa, atualizando sozinhos quando o token é
+// colado/revalidado (mesmo gatilho que já detecta o nome do restaurante).
+let enderecoRestauranteAtual = ""
+let telefoneRestauranteAtual = ""
 
 const corPorStatus = {
   ocioso: "#4caf7d",
@@ -80,6 +86,8 @@ async function carregarImpressorasWindows() {
 function montarConfig() {
   return {
     nomeRestaurante: campoNome.value.trim(),
+    enderecoRestaurante: enderecoRestauranteAtual,
+    telefoneRestaurante: telefoneRestauranteAtual,
     token: campoToken.value.trim(),
     tipoConexao,
     impressoraHost: campoHost.value.trim() || "127.0.0.1",
@@ -91,6 +99,8 @@ function montarConfig() {
 async function carregar() {
   const config = await window.agenteNosso.lerConfig()
   campoNome.value = config.nomeRestaurante ?? ""
+  enderecoRestauranteAtual = config.enderecoRestaurante ?? ""
+  telefoneRestauranteAtual = config.telefoneRestaurante ?? ""
   campoToken.value = config.token ?? ""
   campoHost.value = config.impressoraHost ?? "127.0.0.1"
   campoPorta.value = String(config.impressoraPorta ?? 9100)
@@ -107,10 +117,12 @@ async function carregar() {
 campoToken.addEventListener("blur", async () => {
   const token = campoToken.value.trim()
   if (!token) return
-  const nome = await window.agenteNosso.buscarNomeRestaurante(token)
-  if (nome) {
-    campoNome.value = nome
-    mostrarMensagem(`Restaurante detectado: ${nome}`, "ok")
+  const dados = await window.agenteNosso.buscarDadosRestaurante(token)
+  if (dados) {
+    campoNome.value = dados.nome
+    enderecoRestauranteAtual = dados.endereco ?? ""
+    telefoneRestauranteAtual = dados.telefone ?? ""
+    mostrarMensagem(`Restaurante detectado: ${dados.nome}`, "ok")
   }
 })
 

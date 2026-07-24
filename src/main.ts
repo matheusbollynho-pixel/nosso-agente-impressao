@@ -3,7 +3,7 @@ import { autoUpdater } from "electron-updater"
 import { join } from "path"
 import { appendFileSync } from "fs"
 import { lerConfig, salvarConfig, configCompleta, type ConfigAgente } from "./config"
-import { iniciarPolling, imprimirTeste, buscarNomeRestaurante, type StatusAgente } from "./polling"
+import { iniciarPolling, imprimirTeste, buscarDadosRestaurante, type StatusAgente } from "./polling"
 import { detectarImpressorasNaRede } from "./deteccao"
 import { listarImpressorasWindows, garantirCompartilhada } from "./impressoraUsb"
 
@@ -205,6 +205,6 @@ ipcMain.handle("listar-impressoras-windows", async () => {
   return listarImpressorasWindows()
 })
 
-ipcMain.handle("buscar-nome-restaurante", async (_evento, token: string) => {
-  return buscarNomeRestaurante(token)
+ipcMain.handle("buscar-dados-restaurante", async (_evento, token: string) => {
+  return buscarDadosRestaurante(token)
 })

@@ -1,6 +1,6 @@
 {
   "name": "nosso-agente-impressao",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Agente de impressão térmica automática do Nosso — roda no computador do restaurante e imprime pedidos confirmados na hora.",
   "main": "dist/main.js",
   "scripts": {
