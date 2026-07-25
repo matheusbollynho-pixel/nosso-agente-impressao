@@ -142,8 +142,11 @@ export function montarComanda(restaurante: DadosRestauranteImpressao, pedido: Pe
   linhas.push(DUPLO)
   linhas.push(`TOTAL: ${formatarPreco(pedido.valor_total)}`)
   linhas.push(DUPLO)
-  linhas.push("")
-  linhas.push("")
+  // O cortador fica alguns milímetros abaixo da cabeça de impressão — sem
+  // esse espaço o corte acontece em cima do TOTAL antes do papel avançar o
+  // suficiente pra ele ficar visível por completo (mesmo bug já corrigido
+  // no agente do Estoque & Caixa).
+  linhas.push("", "", "", "", "", "")
 
   const texto = linhas.join("\n") + "\n"
 
